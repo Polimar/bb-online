@@ -56,15 +56,14 @@ services:
       - key: REDIS_TTL
         value: 3600
   
-  # Frontend Static HTML/CSS/JS
-  - type: static
-    name: brainbrawler-app
-    plan: free    
+  # Frontend statico
+  - type: web
+    name: brainbrawler-frontend
+    env: static
+    plan: free
+    region: frankfurt
     buildCommand: cd frontend && chmod +x build.sh && ./build.sh
     staticPublishPath: frontend
-    headers:
-      - path: /*
-        headers:
-          X-Frame-Options: DENY
-          X-Content-Type-Options: nosniff
-          Referrer-Policy: strict-origin-when-cross-origin 
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://brainbrawler-api.onrender.com
