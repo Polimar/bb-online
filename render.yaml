@@ -31,7 +31,8 @@ services:
           name: brainbrawler-db
           property: connectionString
       - key: REDIS_URL
-        fromDatabase:
+        fromService:
+          type: redis
           name: brainbrawler-redis
           property: connectionString
       - key: JWT_SECRET
