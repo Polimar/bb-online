@@ -5,12 +5,12 @@ databases:
     plan: free
     region: frankfurt
 
-  - name: brainbrawler-redis
-    type: redis
+services:
+  # Redis Cache Service
+  - type: redis
+    name: brainbrawler-redis
     plan: free
     region: frankfurt
-
-services:
   # Backend API + Socket.io + GameEngine integrato
   - type: web
     name: brainbrawler-api
@@ -36,7 +36,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://brainbrawler-app.onrender.com
+        value: https://brainbrawler-frontend.onrender.com
       - key: GAME_ENGINE_ENABLED
         value: true
       - key: SOCKET_IO_ENABLED
