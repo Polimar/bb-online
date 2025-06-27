@@ -11,6 +11,7 @@ services:
     name: brainbrawler-redis
     plan: free
     region: frankfurt
+    ipAllowList: []
   # Backend API + Socket.io + GameEngine integrato
   - type: web
     name: brainbrawler-api
@@ -61,7 +62,6 @@ services:
     name: brainbrawler-frontend
     env: static
     plan: free
-    region: frankfurt
     buildCommand: cd frontend && chmod +x build.sh && ./build.sh
     staticPublishPath: frontend
     envVars:
