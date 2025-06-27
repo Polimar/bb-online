@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                       String            @id @default(cuid())
+  email                    String            @unique
+  username                 String            @unique
+  displayName              String
+  googleId                 String?           @unique
+  avatar                   String?
+  passwordHash             String?
+  totalGamesPlayed         Int               @default(0)
+  totalWins                Int               @default(0)
+  totalScore               Int               @default(0)
+  level                    Int               @default(1)
+  xp                       Int               @default(0)
+  lastLoginAt              DateTime?
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+  accountType              AccountType       @default(FREE)
+  emailVerificationCode    String?
+  emailVerificationExpires DateTime?
+  emailVerified            Boolean           @default(false)
+  hasCompletedSetup        Boolean           @default(false)
+  friendships              Friendship[]      @relation("FriendshipFrom")
+  friendsOf                Friendship[]      @relation("FriendshipTo")
+  gameResults              GameResult[]
+  createdGames             Game[]            @relation("GameCreator")
+  gamePlayers              GamePlayer[]
+  achievements             UserAchievement[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  icon        String?
+  color       String?
+  description String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+  questions   Question[]
+
+  @@map("categories")
+}
+
+model Question {
+  id            String            @id @default(cuid())
+  text          String
+  options       String[]
+  correctAnswer Int
+  categoryId    String
+  difficulty    Difficulty
+  imageUrl      String?
+  explanation   String?
+  timeLimit     Int               @default(15)
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  createdBy     String            @default("system")
+  language      String            @default("EN")
+  questionSets  QuestionSetItem[]
+  category      Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("questions")
+}
+
+model QuestionSet {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  isPublic    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  category    String            @default("General")
+  userId      String            @default("system")
+  language    String            @default("EN")
+  games       Game[]
+  questions   QuestionSetItem[]
+
+  @@map("question_sets")
+}
+
+model QuestionSetItem {
+  id            String      @id @default(cuid())
+  questionSetId String
+  questionId    String
+  order         Int
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionSet   QuestionSet @relation(fields: [questionSetId], references: [id], onDelete: Cascade)
+
+  @@unique([questionSetId, questionId])
+  @@unique([questionSetId, order])
+  @@map("question_set_items")
+}
+
+model Game {
+  id              String       @id @default(cuid())
+  roomCode        String       @unique @default(cuid())
+  questionSetId   String?
+  status          GameStatus   @default(WAITING)
+  currentQuestion Int          @default(0)
+  maxPlayers      Int          @default(4)
+  timePerQuestion Int          @default(30)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  category        String       @default("General")
+  language        String       @default("EN")
+  createdBy       String
+  currentPlayers  Int          @default(0)
+  isPrivate       Boolean      @default(false)
+  name            String?
+  password        String?
+  questionTime    Int          @default(30)
+  totalQuestions  Int          @default(10)
+  gameResults     GameResult[]
+  players         GamePlayer[]
+  creator         User         @relation("GameCreator", fields: [createdBy], references: [id])
+  questionSet     QuestionSet? @relation(fields: [questionSetId], references: [id])
+
+  @@map("games")
+}
+
+model GamePlayer {
+  id       String    @id @default(cuid())
+  gameId   String
+  userId   String
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+  isActive Boolean   @default(true)
+  game     Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
+  @@map("game_players")
+}
+
+model GameResult {
+  id              String   @id @default(cuid())
+  gameId          String
+  userId          String
+  finalScore      Int      @default(0)
+  finalRank       Int      @default(0)
+  correctAnswers  Int      @default(0)
+  totalAnswers    Int      @default(0)
+  avgResponseTime Float    @default(0)
+  xpGained        Int      @default(0)
+  completedAt     DateTime @default(now())
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
+  @@map("game_results")
+}
+
+model Achievement {
+  id               String            @id @default(cuid())
+  name             String            @unique
+  description      String
+  icon             String
+  condition        String
+  xpReward         Int               @default(0)
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model Friendship {
+  id         String           @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  fromUser   User             @relation("FriendshipFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User             @relation("FriendshipTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@map("friendships")
+}
+
+enum GameStatus {
+  WAITING
+  LOBBY
+  ACTIVE
+  PAUSED
+  FINISHED
+  CANCELLED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+enum AccountType {
+  FREE
+  PREMIUM
+  ADMIN
+}

@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 BrainBrawler - Game Lobby</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #667eea;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .user-stats {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .account-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-free {
+            background: linear-gradient(45deg, #ffc107, #ff8f00);
+            color: white;
+        }
+
+        .badge-premium {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+
+
+        .main-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Advertisement Styles for FREE users */
+        .ad-banner {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 1200px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ad-banner.show {
+            display: block;
+        }
+
+        .ad-banner-top {
+            margin-top: 0;
+        }
+
+        .ad-placeholder {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .ad-placeholder .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .ad-disclaimer {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Native Ad Sidebar for FREE users */
+        .native-ad {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .native-ad.show {
+            display: block;
+        }
+
+        .native-ad h3 {
+            color: #ff8f00;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .native-ad-content {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .native-ad-cta {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .native-ad-cta:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Premium Notice for PREMIUM users */
+        .premium-notice {
+            display: none;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 1200px;
+            text-align: center;
+            border-radius: 15px;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(40, 167, 69, 0.2);
+        }
+
+        .premium-notice.show {
+            display: block;
+        }
+
+        /* Upgrade Card for FREE users */
+        .upgrade-card {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(255, 193, 7, 0.3);
+        }
+
+        .upgrade-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .upgrade-card .price {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 15px 0;
+        }
+
+        .upgrade-card .price small {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .upgrade-card ul {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .upgrade-card li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .upgrade-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .upgrade-btn {
+            background: white;
+            color: #ff8f00;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            background: #e1e5e9;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon.included {
+            color: #28a745;
+        }
+
+        .feature-icon.excluded {
+            color: #dc3545;
+        }
+
+        .feature-icon.premium {
+            color: #ffc107;
+        }
+
+        .rooms-container {
+            display: grid;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .room-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            border-color: #667eea;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .room-name {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .creator-badge {
+            color: #ffc107;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-badge.finished {
+            background: #6c757d;
+            color: white;
+        }
+
+        .status-badge.unavailable {
+            background: #dc3545;
+            color: white;
+        }
+
+        .room-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .room-players {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .delete-room-btn {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .delete-room-btn:hover {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .room-info {
+            color: #666;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 20px;
+        }
+
+        .pricing-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 20px 0;
+        }
+
+        .pricing-period {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .upgrade-benefits {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state img {
+            width: 80px;
+            height: 80px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        /* Advertisement Styles */
+        .ad-banner {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+            display: none; /* Hidden by default */
+        }
+
+        .ad-banner.show {
+            display: block;
+        }
+
+        .ad-banner-top {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .ad-banner-sidebar {
+            background: rgba(248, 249, 250, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .ad-banner-native {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+
+        .ad-placeholder {
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ad-placeholder .icon {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        .ad-disclaimer {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        .premium-notice {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .premium-notice.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin: 20px auto;
+            }
+
+            .section-card {
+                padding: 30px 20px;
+            }
+
+            .navbar-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .user-info {
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .ad-banner-top {
+                margin: 10px auto;
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">🧠 BrainBrawler</div>
+            
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-stats">
+                        <span id="userLevel">Level ?</span> • 
+                        <span id="userWins">? Wins</span> • 
+                        <span class="account-badge" id="accountBadge">FREE</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Top Advertisement Banner (FREE users only) -->
+    <div class="ad-banner ad-banner-top" id="topAdBanner">
+        <div class="ad-placeholder">
+            <div class="icon">📢</div>
+            <div><strong>Advertisement Space</strong></div>
+            <div>728x90 Banner / Google AdSense</div>
+            <div class="ad-disclaimer">Ads help keep BrainBrawler free for everyone</div>
+        </div>
+    </div>
+
+    <!-- Premium Notice (PREMIUM users only) -->
+    <div class="premium-notice" id="premiumNotice">
+        ⭐ You're enjoying an ad-free experience with BrainBrawler Premium!
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Play Section -->
+        <div class="section-card">
+            <h2 class="section-title">
+                🎮 Join a Game
+            </h2>
+            <p class="section-subtitle">Jump into an existing room or wait for other players</p>
+            
+
+
+            <!-- Room Search Filters -->
+            <div style="margin: 20px 0; padding: 20px; background: rgba(102, 126, 234, 0.05); border-radius: 15px;">
+                <h4 style="margin-bottom: 15px; color: #667eea;">🔍 Search & Filter Rooms</h4>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; align-items: end;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Room Name</label>
+                        <input 
+                            type="text" 
+                            id="roomSearchInput" 
+                            placeholder="Search room by name..." 
+                            style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem;"
+                            oninput="filterRooms()"
+                        >
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Language</label>
+                        <select 
+                            id="languageFilter" 
+                            style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem;"
+                            onchange="filterRooms()"
+                        >
+                            <option value="">All Languages</option>
+                            <option value="IT">🇮🇹 Italian</option>
+                            <option value="EN">🇺🇸 English</option>
+                            <option value="ES">🇪🇸 Spanish</option>
+                            <option value="DE">🇩🇪 German</option>
+                            <option value="FR">🇫🇷 French</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Category</label>
+                        <select 
+                            id="categoryFilter" 
+                            style="width: 100%; padding: 10px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem;"
+                            onchange="filterRooms()"
+                        >
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="rooms-container" id="roomsContainer">
+                <div class="loading-spinner"></div>
+            </div>
+            
+            <div class="empty-state" id="emptyRooms" style="display: none;">
+                <div style="font-size: 3rem;">🏠</div>
+                <p>No active rooms available.<br>Create a room or wait for others to join!</p>
+            </div>
+        </div>
+
+        <!-- Account Section -->
+        <div class="section-card" id="accountSection">
+            <!-- Free Account Content -->
+            <div id="freeAccountContent">
+                <h2 class="section-title">
+                    🆓 Free Player
+                </h2>
+                <p class="section-subtitle">You're playing with a free account</p>
+                
+                <ul class="feature-list">
+                    <li>
+                        <div class="feature-icon included">✅</div>
+                        <span>Join unlimited games</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon included">✅</div>
+                        <span>Play with all question categories</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon included">✅</div>
+                        <span>Track your statistics</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon excluded">❌</div>
+                        <span>Create custom rooms</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon excluded">❌</div>
+                        <span>Upload custom questions</span>
+                    </li>
+                    <li>
+                        <div class="feature-icon excluded">❌</div>
+                        <span>Private rooms with friends</span>
+                    </li>
+                </ul>
+
+                <!-- Native Advertisement (Google AdMob) -->
+                <div class="native-ad" id="nativeAdBanner">
+                    <h3>🎮 Level Up Your Gaming</h3>
+                    <div class="native-ad-content">
+                        Join millions of players in epic quiz battles. Test your knowledge and compete for the top spot!
+                    </div>
+                    <button class="native-ad-cta" onclick="window.open('#', '_blank')">
+                        Play Now - Free!
+                    </button>
+                </div>
+
+                <div class="pricing-card">
+                    <h3>🚀 Upgrade to Premium</h3>
+                    <div class="pricing-price">
+                        $4.99
+                        <span class="pricing-period">one-time</span>
+                    </div>
+                    
+                    <div class="upgrade-benefits">
+                        <ul class="feature-list">
+                            <li>
+                                <div class="feature-icon premium">⭐</div>
+                                <span>Create unlimited rooms</span>
+                            </li>
+                            <li>
+                                <div class="feature-icon premium">⭐</div>
+                                <span>Upload custom questions</span>
+                            </li>
+                            <li>
+                                <div class="feature-icon premium">⭐</div>
+                                <span>Private rooms with passwords</span>
+                            </li>
+                            <li>
+                                <div class="feature-icon premium">⭐</div>
+                                <span>Room customization options</span>
+                            </li>
+                            <li>
+                                <div class="feature-icon premium">⭐</div>
+                                <span>Priority support</span>
+                            </li>
+                            <li>
+                                <div class="feature-icon premium">⭐</div>
+                                <span><strong>Remove all advertisements</strong></span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button class="btn btn-warning" onclick="upgradeToPremium()">
+                        💳 Upgrade Now - No More Ads!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Premium Account Content -->
+            <div id="premiumAccountContent" style="display: none;">
+                <h2 class="section-title">
+                    ⭐ Premium Player
+                </h2>
+                <p class="section-subtitle">You have full access to all features</p>
+                
+                <button class="btn btn-success" onclick="createRoom()">
+                    🏠 Create New Room
+                </button>
+                
+                <button class="btn btn-secondary" onclick="manageQuestions()">
+                    📝 Manage Questions
+                </button>
+                
+                <button class="btn btn-secondary" onclick="viewStatistics()">
+                    📊 Detailed Statistics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = `http://${window.location.hostname}:3000`;
+        
+        let currentUser = null;
+        let rooms = [];
+        let roomsInterval = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUser();
+            loadRooms();
+            startRoomsPolling();
+            initializeAdvertisements();
+        });
+
+        // Load user data
+        async function loadUser() {
+            const token = localStorage.getItem('brainbrawler_token');
+            const userFromStorage = localStorage.getItem('brainbrawler_user');
+            
+            console.log('🔍 DEBUG: Loading user...');
+            console.log('🔍 DEBUG: Token exists:', !!token);
+            console.log('🔍 DEBUG: User data exists:', !!userFromStorage);
+            
+            if (!token || !userFromStorage) {
+                console.log('❌ DEBUG: Missing token or user data, redirecting to login');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                currentUser = JSON.parse(userFromStorage);
+                console.log('✅ DEBUG: User data loaded from storage:', currentUser);
+                
+                // Update UI with user data immediately
+                updateUserDisplay();
+                
+                // Verify token is still valid
+                console.log('🔍 DEBUG: Verifying token...');
+                const response = await fetch(`${API_BASE}/api/auth/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                console.log('🔍 DEBUG: Profile response status:', response.status);
+                
+                if (!response.ok) {
+                    console.log('❌ DEBUG: Token verification failed, status:', response.status);
+                    const errorText = await response.text();
+                    console.log('❌ DEBUG: Error response:', errorText);
+                    
+                    // Token invalid, redirect to login
+                    localStorage.removeItem('brainbrawler_token');
+                    localStorage.removeItem('brainbrawler_user');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                const userData = await response.json();
+                console.log('✅ DEBUG: Fresh user data from server:', userData);
+                
+                currentUser = userData.user;
+                localStorage.setItem('brainbrawler_user', JSON.stringify(currentUser));
+                updateUserDisplay();
+                
+            } catch (error) {
+                console.error('❌ DEBUG: Error loading user:', error);
+                console.error('❌ DEBUG: Error stack:', error.stack);
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Update user display
+        function updateUserDisplay() {
+            if (!currentUser) return;
+            
+            document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = currentUser.displayName;
+            document.getElementById('userLevel').textContent = `Level ${currentUser.level}`;
+            document.getElementById('userWins').textContent = `${currentUser.totalWins} Wins`;
+            
+            const accountBadge = document.getElementById('accountBadge');
+            accountBadge.textContent = currentUser.accountType;
+            accountBadge.className = `account-badge badge-${currentUser.accountType.toLowerCase()}`;
+            
+            // Show appropriate account section and advertisements
+            if (currentUser.accountType === 'PREMIUM' || currentUser.accountType === 'ADMIN') {
+                // Premium users: No ads, show premium content
+                document.getElementById('freeAccountContent').style.display = 'none';
+                document.getElementById('premiumAccountContent').style.display = 'block';
+                hideAdvertisements();
+                showPremiumNotice();
+            } else {
+                // Free users: Show ads and free content
+                document.getElementById('freeAccountContent').style.display = 'block';
+                document.getElementById('premiumAccountContent').style.display = 'none';
+                showAdvertisements();
+                hidePremiumNotice();
+            }
+        }
+
+        // Advertisement management functions
+        function showAdvertisements() {
+            // Show all ad banners for FREE users
+            const adElements = ['topAdBanner', 'nativeAdBanner'];
+            adElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('show');
+                }
+            });
+            
+            console.log('📢 Advertisements loaded for FREE user');
+            
+            // Here you would initialize actual AdMob/AdSense code
+            // Example:
+            // initializeGoogleAds();
+            // loadAdMobNative();
+        }
+
+        function hideAdvertisements() {
+            // Hide all ad banners for PREMIUM users
+            const adElements = ['topAdBanner', 'nativeAdBanner'];
+            adElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.remove('show');
+                }
+            });
+            
+            console.log('⭐ Ad-free experience active for PREMIUM user');
+        }
+
+        function showPremiumNotice() {
+            const element = document.getElementById('premiumNotice');
+            if (element) {
+                element.classList.add('show');
+            }
+        }
+
+        function hidePremiumNotice() {
+            const element = document.getElementById('premiumNotice');
+            if (element) {
+                element.classList.remove('show');
+            }
+        }
+
+        // Initialize AdMob/AdSense (placeholder function)
+        function initializeAdvertisements() {
+            // This function would contain actual AdMob initialization
+            // For Google AdSense:
+            /*
+            (adsbygoogle = window.adsbygoogle || []).push({
+                google_ad_client: "ca-pub-XXXXXXXXXX",
+                enable_page_level_ads: true
+            });
+            */
+            
+            // For AdMob Native:
+            /*
+            if (window.admob) {
+                admob.createBanner({
+                    adId: 'your-admob-banner-id',
+                    position: admob.POSITION.TOP_BANNER,
+                    autoShow: true
+                });
+            }
+            */
+            
+            console.log('📱 Advertisement SDK initialized (placeholder)');
+        }
+
+        // Load available rooms
+        async function loadRooms() {
+            try {
+                const token = localStorage.getItem('brainbrawler_token');
+                console.log('🔍 FRONTEND DEBUG - Loading rooms for user:', currentUser?.id);
+                
+                const response = await fetch(`${API_BASE}/api/game/rooms`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    rooms = data.rooms || [];
+                    
+                    console.log('🔍 FRONTEND DEBUG - Rooms received:', rooms.length);
+                    console.log('🔍 FRONTEND DEBUG - Room details:', rooms.map(r => ({ 
+                        id: r.id, 
+                        name: r.name, 
+                        status: r.status, 
+                        isCreator: r.isCreator,
+                        createdBy: r.createdBy
+                    })));
+                    
+                    updateRoomsDisplay();
+                } else {
+                    console.error('Failed to load rooms');
+                    rooms = [];
+                    updateRoomsDisplay();
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+                rooms = [];
+                updateRoomsDisplay();
+            }
+        }
+
+        // Update rooms display
+        function updateRoomsDisplay(filteredRooms = null) {
+            const container = document.getElementById('roomsContainer');
+            const emptyState = document.getElementById('emptyRooms');
+            const roomsToShow = filteredRooms || rooms;
+            
+            container.innerHTML = '';
+            
+            if (roomsToShow.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // Update category filter options
+            updateCategoryFilter();
+            
+            roomsToShow.forEach(room => {
+                const roomCard = document.createElement('div');
+                roomCard.className = 'room-card';
+                
+                const flagEmoji = getFlagEmoji(room.language);
+                const isCreator = currentUser && room.createdBy === currentUser.id;
+                const isPremium = currentUser && (currentUser.accountType === 'PREMIUM' || currentUser.accountType === 'ADMIN');
+                
+                // DEBUG: Log room info to understand the issue
+                if (isCreator) {
+                    console.log('🔍 CREATOR ROOM DEBUG:', {
+                        roomName: room.name,
+                        status: room.status,
+                        canJoin: room.canJoin,
+                        isCreator: isCreator,
+                        currentUser: currentUser?.id,
+                        roomCreatedBy: room.createdBy
+                    });
+                }
+                
+                let roomActions = '';
+                if (isCreator && isPremium) {
+                    roomActions = `
+                        <button class="delete-room-btn" onclick="event.stopPropagation(); deleteRoom('${room.id}')" title="Delete Room">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                }
+                
+                let statusBadge = '';
+                let roomClickAction = `joinRoom('${room.id}')`;
+                let canClick = true;
+                
+                // Handle different room statuses - but ALWAYS use joinRoom for consistency
+                if (room.status === 'ACTIVE' && isCreator) {
+                    statusBadge = '<span class="status-badge active">🎮 In Progress</span>';
+                    roomClickAction = `joinRoom('${room.id}')`;  // Changed: Always use joinRoom
+                } else if (room.status === 'FINISHED') {
+                    statusBadge = '<span class="status-badge finished">✅ Completed</span>';
+                    roomClickAction = `joinRoom('${room.id}')`;  // Changed: Always use joinRoom (auto-resets)
+                } else if (room.status === 'LOBBY' || room.status === 'WAITING') {
+                    // LOBBY/WAITING rooms are always joinable, especially for creators
+                    roomClickAction = `joinRoom('${room.id}')`;
+                    canClick = true;
+                } else if (!room.canJoin && !isCreator) {
+                    // Only block non-creators from non-joinable rooms
+                    statusBadge = '<span class="status-badge unavailable">❌ Cannot Join</span>';
+                    roomClickAction = '';
+                    canClick = false;
+                }
+
+                roomCard.innerHTML = `
+                    <div class="room-header">
+                        <div class="room-name">
+                            ${flagEmoji} ${room.name}
+                            ${isCreator ? '<i class="fas fa-crown creator-badge" title="Your Room"></i>' : ''}
+                            ${statusBadge}
+                        </div>
+                        <div class="room-header-actions">
+                            <div class="room-players">${room.currentPlayers}/${room.maxPlayers}</div>
+                            ${roomActions}
+                        </div>
+                    </div>
+                    <div class="room-info">
+                        <span>📚 ${room.category}</span>
+                        <span>⏱️ ${room.questionTime}s per question</span>
+                        <span>🎯 ${room.totalQuestions} questions</span>
+                        <span class="room-status">📋 ${room.statusDisplay || room.status}</span>
+                    </div>
+                `;
+                
+                // Set click handler based on room status
+                if (canClick && roomClickAction) {
+                    roomCard.onclick = () => {
+                        eval(roomClickAction);
+                    };
+                    roomCard.style.cursor = 'pointer';
+                    roomCard.style.opacity = '1';
+                } else {
+                    roomCard.style.cursor = 'not-allowed';
+                    roomCard.style.opacity = '0.6';
+                    roomCard.onclick = null;
+                }
+                
+                container.appendChild(roomCard);
+            });
+        }
+
+        // Update category filter based on available rooms
+        function updateCategoryFilter() {
+            const categoryFilter = document.getElementById('categoryFilter');
+            const categories = [...new Set(rooms.map(room => room.category))].sort();
+            
+            // Keep current selection
+            const currentValue = categoryFilter.value;
+            
+            // Clear and rebuild options
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+            
+            // Restore selection if still valid
+            if (categories.includes(currentValue)) {
+                categoryFilter.value = currentValue;
+            }
+        }
+
+        // Filter rooms based on search criteria
+        function filterRooms() {
+            const searchInput = document.getElementById('roomSearchInput').value.toLowerCase();
+            const languageFilter = document.getElementById('languageFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            const filteredRooms = rooms.filter(room => {
+                const matchesName = room.name.toLowerCase().includes(searchInput);
+                const matchesLanguage = !languageFilter || room.language === languageFilter;
+                const matchesCategory = !categoryFilter || room.category === categoryFilter;
+                
+                return matchesName && matchesLanguage && matchesCategory;
+            });
+            
+            updateRoomsDisplay(filteredRooms);
+        }
+
+        // Utility function for flag emojis
+        function getFlagEmoji(language) {
+            const flags = {
+                'IT': '🇮🇹',
+                'EN': '🇺🇸',
+                'ES': '🇪🇸',
+                'DE': '🇩🇪',
+                'FR': '🇫🇷'
+            };
+            return flags[language] || '🌐';
+        }
+
+        // Start polling for rooms  
+        function startRoomsPolling() {
+            if (roomsInterval) {
+                clearInterval(roomsInterval);
+            }
+            
+            roomsInterval = setInterval(loadRooms, 5000); // Update every 5 seconds
+        }
+
+        // Stop polling when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (roomsInterval) {
+                clearInterval(roomsInterval);
+            }
+        });
+
+
+
+        // Join specific room
+        async function joinRoom(roomId) {
+            console.log(`🚪 JOIN ROOM CALLED with roomId: ${roomId}`);
+            
+            // Show loading indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                font-size: 18px;
+            `;
+            loadingDiv.innerHTML = '🔄 Joining room...';
+            document.body.appendChild(loadingDiv);
+            
+            try {
+                const token = localStorage.getItem('brainbrawler_token');
+                console.log(`🔑 Token available: ${token ? 'YES' : 'NO'}`);
+                
+                console.log(`📡 Calling /api/game/join-room for room ${roomId}...`);
+                const response = await fetch(`${API_BASE}/api/game/join-room`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ roomId })
+                });
+                
+                console.log(`📡 Join room response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`✅ Join room successful:`, data);
+                    
+                    // Wait a moment to ensure backend processing is complete
+                    console.log(`⏳ Waiting for backend to process join...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Whether joining new or rejoining existing room, go to waiting room
+                    console.log(`🔄 Redirecting to waiting-room.html?roomId=${roomId}`);
+                    window.location.href = `waiting-room.html?roomId=${roomId}`;
+                } else {
+                    const error = await response.json();
+                    console.error(`❌ Join room failed:`, error);
+                    document.body.removeChild(loadingDiv);
+                    alert(error.error || 'Failed to join room');
+                }
+            } catch (error) {
+                console.error(`💥 Join room exception:`, error);
+                document.body.removeChild(loadingDiv);
+                alert('Network error. Please try again.');
+            }
+        }
+        
+        // Rejoin active game (for creators)
+        async function rejoinGame(roomId) {
+            if (confirm('Your game is already in progress. Do you want to rejoin?')) {
+                // Get room code and go directly to game
+                try {
+                    const token = localStorage.getItem('brainbrawler_token');
+                    const response = await fetch(`${API_BASE}/api/game/room/${roomId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const roomCode = `R${roomId}`;
+                        window.location.href = `game.html?roomId=${roomId}&roomCode=${roomCode}`;
+                    } else {
+                        alert('Failed to rejoin game');
+                    }
+                } catch (error) {
+                    alert('Network error. Please try again.');
+                }
+            }
+        }
+        
+        // Restart finished game (creator) or join room (other players)
+        async function restartGame(roomId) {
+            try {
+                const token = localStorage.getItem('brainbrawler_token');
+                
+                // Reset room status to LOBBY to allow new players to join
+                const response = await fetch(`${API_BASE}/api/game/reset-room`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ roomId })
+                });
+                
+                if (response.ok) {
+                    // Go to waiting room after resetting
+                    window.location.href = `waiting-room.html?roomId=${roomId}`;
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to restart game. Trying to join normally...');
+                    // Fallback: try to join normally
+                    joinRoom(roomId);
+                }
+            } catch (error) {
+                console.error('Error restarting game:', error);
+                // Fallback: try to join normally  
+                joinRoom(roomId);
+            }
+        }
+
+        // Create new room (Premium only)
+        function createRoom() {
+            window.location.href = 'create-room.html';
+        }
+
+        // Manage questions (Premium only)
+        function manageQuestions() {
+            window.location.href = 'manage-questions.html';
+        }
+
+        // View detailed statistics
+        function viewStatistics() {
+            window.location.href = 'advanced-stats.html';
+        }
+
+        // Upgrade to premium
+        function upgradeToPremium() {
+            window.location.href = 'account-setup.html';
+        }
+
+        // View achievements
+        function viewAchievements() {
+            // For now, redirect to statistics page
+            alert('Achievements feature coming soon! 🏆\n\nFor now, check your detailed statistics.');
+            viewStatistics();
+        }
+
+        // Delete room (Premium creators only)
+        async function deleteRoom(roomId) {
+            if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('brainbrawler_token');
+                const response = await fetch(`${API_BASE}/api/game/room/${roomId}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Refresh the rooms list
+                    await loadRooms();
+                    
+
+                    // Show success message
+                    const successMessage = document.createElement('div');
+                    successMessage.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #28a745;
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 10px;
+                        z-index: 1000;
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    `;
+                    successMessage.innerHTML = '<i class="fas fa-check"></i> Room deleted successfully';
+                    document.body.appendChild(successMessage);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(successMessage);
+                    }, 3000);
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Failed to delete room');
+                }
+            } catch (error) {
+                console.error('Delete room error:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('brainbrawler_token');
+            localStorage.removeItem('brainbrawler_user');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html> 
