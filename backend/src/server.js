@@ -42,7 +42,8 @@ const io = socketIo(server, {
 });
 
 const prisma = new PrismaClient();
-const kafkaProducer = process.env.KAFKA_ENABLED === 'true' ? new KafkaProducer() : null;
+// Kafka Producer - sempre abilitato, fallback automatico se non disponibile
+const kafkaProducer = new KafkaProducer();
 const gameEngine = new GameEngine(io, prisma);
 
 // Make gameEngine available to routes
@@ -111,13 +112,16 @@ io.on('connection', (socket) => {
       const room = await gameEngine.createRoom(socket.user.id, data.questionSetId);
       socket.join(room.roomCode);
       
-      if (kafkaProducer) {
+      // Kafka event (with fallback)
+      try {
         await kafkaProducer.send('room-events', {
           type: 'ROOM_CREATED',
           roomCode: room.roomCode,
           userId: socket.user.id,
           data: room
         });
+      } catch (error) {
+        console.warn('Kafka send failed, continuing with Socket.io only:', error.message);
       }
       
       socket.emit('room-created', room);
@@ -133,13 +137,16 @@ io.on('connection', (socket) => {
       const result = await gameEngine.joinRoom(socket.user.id, data.roomCode);
       socket.join(data.roomCode);
       
-      if (kafkaProducer) {
+      // Kafka event (with fallback)
+      try {
         await kafkaProducer.send('player-events', {
           type: 'PLAYER_JOINED',
           roomCode: data.roomCode,
           userId: socket.user.id,
           timestamp: Date.now()
         });
+      } catch (error) {
+        console.warn('Kafka send failed, continuing with Socket.io only:', error.message);
       }
       
       io.to(data.roomCode).emit('player-joined', result);
@@ -297,13 +304,16 @@ io.on('connection', (socket) => {
     try {
       socket.leave(data.roomCode);
       
-      if (kafkaProducer) {
+      // Kafka event (with fallback)
+      try {
         await kafkaProducer.send('player-events', {
           type: 'PLAYER_LEFT',
           roomCode: data.roomCode,
           userId: socket.user.id,
           timestamp: Date.now()
         });
+      } catch (error) {
+        console.warn('Kafka send failed, continuing with Socket.io only:', error.message);
       }
       
       io.to(data.roomCode).emit('player-left', {
@@ -325,16 +335,13 @@ io.on('connection', (socket) => {
 // Start services
 async function startServer() {
   try {
-    // Connect to Kafka (solo se abilitato)
-    if (kafkaProducer) {
-      try {
-        await kafkaProducer.connect();
-        console.log('✅ Kafka connected');
-      } catch (error) {
-        console.warn('⚠️  Kafka not available, running without messaging:', error.message);
-      }
-    } else {
-      console.log('📡 Kafka disabled - using Socket.io only for real-time communication');
+    // Connect to Kafka (with fallback)
+    try {
+      await kafkaProducer.connect();
+      console.log('✅ Kafka connected successfully');
+    } catch (error) {
+      console.warn('⚠️  Kafka not available, continuing with Socket.io only:', error.message);
+      // Continue without Kafka - Socket.io will handle real-time communication
     }
     
     // Start game engine
@@ -364,7 +371,7 @@ startServer();
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
   try {
-    if (kafkaProducer) await kafkaProducer.disconnect();
+    try { await kafkaProducer.disconnect(); } catch (error) { console.warn("Kafka disconnect error:", error.message); }
     await prisma.$disconnect();
     process.exit(0);
   } catch (error) {
@@ -376,7 +383,7 @@ process.on('SIGTERM', async () => {
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
   try {
-    if (kafkaProducer) await kafkaProducer.disconnect();
+    try { await kafkaProducer.disconnect(); } catch (error) { console.warn("Kafka disconnect error:", error.message); }
     await prisma.$disconnect();
     process.exit(0);
   } catch (error) {

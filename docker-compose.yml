@@ -76,7 +76,7 @@ services:
       REDIS_URL: redis://redis:6379
       KAFKA_BROKERS: kafka:9092
       KAFKA_CLIENT_ID: brainbrawler-game-service
-      KAFKA_ENABLED: false
+      KAFKA_ENABLED: true
       REDIS_ENABLED: true
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       CORS_ORIGIN: http://localhost:3001

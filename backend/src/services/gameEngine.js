@@ -5,7 +5,8 @@ class GameEngine {
   constructor(io, prisma) {
     this.io = io;
     this.prisma = prisma || new PrismaClient();
-    this.redis = process.env.REDIS_ENABLED === 'true' ? this.createRedisConnection() : null;
+    // Redis sempre abilitato con fallback automatico
+    this.redis = this.createRedisConnection();
     this.gameTimers = new Map(); // Per gestire i timer delle partite
     this.memoryCache = new Map(); // Cache in memoria quando Redis è disabilitato
   }
