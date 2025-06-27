@@ -1,92 +1,85 @@
 # 🚂 BrainBrawler Railway.app Deployment Guide
 
-## 🚀 Quick Deploy
+## 🚀 Quick Deploy - Opzione Semplificata
 
-1. **Fork/Clone** questo repository
-2. **Connetti a Railway.app**:
+Railway gestisce meglio servizi separati che Docker Compose. Segui questa strategia:
+
+### **Step 1: Deploy Database**
+1. **Vai su Railway.app**
+2. **Crea nuovo progetto**
+3. **Aggiungi PostgreSQL** (template ufficiale)
+4. **Aggiungi Redis** (template ufficiale)
+
+### **Step 2: Deploy Backend**
+1. **Connetti repository** `Polimar/bb-online`
+2. **Root Directory**: `/backend`
+3. **Environment Variables**:
    ```bash
-   # Install Railway CLI
-   npm install -g @railway/cli
-   
-   # Login to Railway
-   railway login
-   
-   # Deploy from directory
-   railway up
+   NODE_ENV=production
+   KAFKA_ENABLED=false          # Disabilitato per semplicità
+   REDIS_ENABLED=true
+   SMTP_ENABLED=false
+   GAME_ENGINE_ENABLED=true
+   SOCKET_IO_ENABLED=true
+   DEFAULT_QUESTION_TIME=15
+   DEFAULT_TOTAL_QUESTIONS=5
+   MAX_PLAYERS_PER_ROOM=8
    ```
 
-## 📦 Stack Completo
+### **Step 3: Deploy Frontend**
+1. **Nuovo servizio** dallo stesso repository
+2. **Root Directory**: `/frontend`
+3. **Environment Variables**:
+   ```bash
+   API_BASE_URL=https://your-backend-url.railway.app
+   ```
 
-### Services Deployed:
-- **PostgreSQL** - Database principale
-- **Redis** - Cache e session storage  
-- **Kafka + Zookeeper** - Message broker per real-time
-- **Backend** - API Node.js + Socket.io + GameEngine
-- **Frontend** - Static HTML/CSS/JS servito da Nginx
+## 📦 Configurazione Semplificata
 
-## ⚙️ Configurazione Automatica
+### **Senza Kafka (per iniziare):**
+- ✅ **PostgreSQL** - Database
+- ✅ **Redis** - Cache 
+- ✅ **Backend** - API + Socket.io + GameEngine
+- ✅ **Frontend** - Static files
+- ❌ **Kafka** - Disabilitato (Socket.io sufficiente)
 
-### Environment Variables (auto-configured):
-```bash
-NODE_ENV=production
-KAFKA_ENABLED=true
-REDIS_ENABLED=true
-SMTP_ENABLED=false          # Email disabled
-GAME_ENGINE_ENABLED=true
-SOCKET_IO_ENABLED=true
-DEFAULT_QUESTION_TIME=15
-DEFAULT_TOTAL_QUESTIONS=5
-MAX_PLAYERS_PER_ROOM=8
-JWT_SECRET=auto-generated
-```
+### **Vantaggi:**
+- 🚀 **Deploy più veloce** (2-3 minuti)
+- 💰 **Meno risorse** utilizzate
+- 🔧 **Più semplice** da gestire
+- ✅ **Tutte le funzionalità** core funzionanti
 
-### 📡 Service Discovery:
-- **Backend**: `http://backend:3000`
-- **Frontend**: `http://frontend:80`
-- **PostgreSQL**: `postgresql://postgres:5432/brainbrawler`
-- **Redis**: `redis://redis:6379`
-- **Kafka**: `kafka:9092`
+## 🎮 Features Disponibili
 
-## 🎮 Features Abilitati
-
-✅ **Multiplayer Real-time** (Socket.io + Kafka)  
-✅ **Game Engine** completo con timer e stati  
+✅ **Multiplayer Real-time** (solo Socket.io)  
+✅ **Game Engine** completo  
 ✅ **Cache Redis** per performance  
-✅ **Database persistente** PostgreSQL  
-✅ **Auto-scaling** via Railway  
-✅ **Health checks** integrati  
+✅ **Database PostgreSQL**  
+✅ **Auto-scaling Railway**  
 ❌ **Email SMTP** (disabilitato)  
+❌ **Kafka** (disabilitato per semplicità)  
 
-## 🔧 Development
+## 🔧 Per Riabilitare Kafka (Advanced)
 
-Per sviluppo locale con Docker:
+Se vuoi Kafka completo, usa Docker Compose locale:
 ```bash
+# Clone repository
+git clone https://github.com/Polimar/bb-online.git
+cd bb-online
+
+# Run full stack with Docker
 docker-compose up -d
 ```
 
-## 📊 Monitoring
+## 📊 URLs di Accesso
 
-- **Backend Health**: `https://your-app.railway.app/health`
-- **Frontend Health**: `https://your-frontend.railway.app/health`
-- **Railway Dashboard**: Monitoring automatico CPU/RAM/Network
-
-## 🚦 Deployment Status
-
-Dopo il deploy, verifica che tutti i servizi siano UP:
-1. ✅ PostgreSQL - Database ready
-2. ✅ Redis - Cache ready  
-3. ✅ Kafka - Message broker ready
-4. ✅ Backend - API + GameEngine ready
-5. ✅ Frontend - Static assets served
-
-## 🎯 Accesso
-
-- **Frontend**: `https://your-frontend-url.railway.app`
-- **API**: `https://your-backend-url.railway.app`
-- **Admin Panel**: `/admin` (se configurato)
+Dopo il deploy:
+- **Frontend**: `https://brainbrawler-frontend-xxx.railway.app`
+- **Backend API**: `https://brainbrawler-backend-xxx.railway.app`
+- **Health Check**: `https://your-backend.railway.app/health`
 
 ---
 
-**🚀 Deploy Time**: ~5-10 minuti  
-**💰 Cost**: Gratis (500h/mese su Railway)  
-**🔄 Auto-Deploy**: Push to main branch 
+**⏱️ Deploy Time**: ~2-3 minuti  
+**💰 Cost**: Gratis (500h/mese)  
+**🎯 Focus**: Stabilità e semplicità prima di tutto 
