@@ -1,16 +1,19 @@
 #!/bin/bash
 
-echo "📦 Preparing BrainBrawler frontend for production deployment..."
+echo "📦 Preparing BrainBrawler frontend for Railway.app deployment..."
 
 # Create build info
-echo "{\"buildTime\": \"$(date)\", \"version\": \"1.0.0\", \"environment\": \"production\"}" > build-info.json
+echo "{\"buildTime\": \"$(date)\", \"version\": \"1.0.0\", \"environment\": \"production\", \"platform\": \"railway\"}" > build-info.json
 
-# Update API endpoints for production
-echo "🔧 Configuring API endpoints for production..."
+# Update API endpoints for Railway.app
+echo "🔧 Configuring API endpoints for Railway.app..."
 
-# Update all HTML files to use dynamic API detection
-find . -name "*.html" -type f -exec sed -i 's|const API_BASE = `http://.*`;|const API_BASE = `https://${window.location.hostname.replace("app", "api")}`;|g' {} \;
+# For Railway, use environment variable for API URL or default to backend service
+API_BASE_URL=${API_BASE_URL:-"http://backend:3000"}
 
-echo "✅ Frontend build completed successfully!"
+# Update all HTML files to use Railway configuration
+find . -name "*.html" -type f -exec sed -i "s|const API_BASE = .*|const API_BASE = '${API_BASE_URL}';|g" {} \;
+
+echo "✅ Frontend build completed successfully for Railway.app!"
 echo "📁 Static files ready for deployment"
-echo "🌐 API will connect to: brainbrawler-api.onrender.com" 
+echo "🔗 API Base URL: ${API_BASE_URL}" 

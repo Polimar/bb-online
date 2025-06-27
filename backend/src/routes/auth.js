@@ -95,17 +95,32 @@ router.post('/register', async (req, res) => {
       }
     });
 
-    // Send verification email
-    const emailResult = await emailService.sendVerificationEmail(
-      email, 
-      verificationCode, 
-      displayName
-    );
+    // Send verification email (if SMTP enabled)
+    let emailResult = { success: true, message: 'SMTP disabled' };
+    if (process.env.SMTP_ENABLED === 'true') {
+      emailResult = await emailService.sendVerificationEmail(
+        email, 
+        verificationCode, 
+        displayName
+      );
+    } else {
+      // Auto-verify email when SMTP is disabled
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          emailVerified: true,
+          emailVerificationCode: null,
+          emailVerificationExpires: null
+        }
+      });
+    }
 
     res.status(201).json({
-      message: 'User created successfully. Please check your email for verification code.',
+      message: process.env.SMTP_ENABLED === 'true' 
+        ? 'User created successfully. Please check your email for verification code.'
+        : 'User created successfully. Email verification disabled for this deployment.',
       user,
-      verificationRequired: true,
+      verificationRequired: process.env.SMTP_ENABLED === 'true',
       emailStatus: emailResult
     });
   } catch (error) {
@@ -172,12 +187,14 @@ router.post('/verify-email', async (req, res) => {
     // Generate token
     const token = generateToken(updatedUser.id);
 
-    // Send welcome email
-    await emailService.sendWelcomeEmail(
-      updatedUser.email,
-      updatedUser.displayName,
-      updatedUser.accountType
-    );
+    // Send welcome email (if SMTP enabled)
+    if (process.env.SMTP_ENABLED === 'true') {
+      await emailService.sendWelcomeEmail(
+        updatedUser.email,
+        updatedUser.displayName,
+        updatedUser.accountType
+      );
+    }
 
     res.json({
       message: 'Email verified successfully',
@@ -223,15 +240,20 @@ router.post('/resend-verification', async (req, res) => {
       }
     });
 
-    // Send verification email
-    const emailResult = await emailService.sendVerificationEmail(
-      email, 
-      verificationCode, 
-      user.displayName
-    );
+    // Send verification email (if SMTP enabled)
+    let emailResult = { success: true, message: 'SMTP disabled' };
+    if (process.env.SMTP_ENABLED === 'true') {
+      emailResult = await emailService.sendVerificationEmail(
+        email, 
+        verificationCode, 
+        user.displayName
+      );
+    }
 
     res.json({
-      message: 'Verification code sent successfully',
+      message: process.env.SMTP_ENABLED === 'true' 
+        ? 'Verification code sent successfully'
+        : 'SMTP disabled - verification code available in debug endpoint',
       emailStatus: emailResult
     });
   } catch (error) {
@@ -264,8 +286,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Check email verification
-    if (!user.emailVerified) {
+    // Check email verification (skip if SMTP disabled)
+    if (!user.emailVerified && process.env.SMTP_ENABLED === 'true') {
       return res.status(403).json({ 
         error: 'Email not verified. Please check your email for verification code.',
         emailVerified: false,

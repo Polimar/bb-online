@@ -5,7 +5,7 @@ class GameEngine {
   constructor(io, prisma) {
     this.io = io;
     this.prisma = prisma || new PrismaClient();
-    this.redis = process.env.REDIS_ENABLED !== 'false' ? this.createRedisConnection() : null;
+    this.redis = process.env.REDIS_ENABLED === 'true' ? this.createRedisConnection() : null;
     this.gameTimers = new Map(); // Per gestire i timer delle partite
     this.memoryCache = new Map(); // Cache in memoria quando Redis è disabilitato
   }
@@ -13,17 +13,12 @@ class GameEngine {
   createRedisConnection() {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     
-    // Configurazione per Render.com/produzione
-    if (process.env.NODE_ENV === 'production' && redisUrl.includes('onrender.com')) {
+    // Configurazione per produzione (Railway, Docker)
+    if (process.env.NODE_ENV === 'production') {
       return new Redis(redisUrl, {
-        tls: {
-          rejectUnauthorized: false
-        },
-        retryDelayOnFailure: () => {
-          return Math.min(1000 * 2 ** 2, 30000);
-        },
+        retryDelayOnFailure: (times) => Math.min(times * 50, 2000),
         maxRetriesPerRequest: 3,
-        connectTimeout: 60000,
+        connectTimeout: 30000,
         lazyConnect: true
       });
     }

@@ -42,7 +42,7 @@ const io = socketIo(server, {
 });
 
 const prisma = new PrismaClient();
-const kafkaProducer = process.env.KAFKA_ENABLED !== 'false' ? new KafkaProducer() : null;
+const kafkaProducer = process.env.KAFKA_ENABLED === 'true' ? new KafkaProducer() : null;
 const gameEngine = new GameEngine(io, prisma);
 
 // Make gameEngine available to routes
