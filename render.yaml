@@ -58,8 +58,8 @@ services:
   
   # Frontend Static HTML/CSS/JS
   - type: static
-    plan: free
     name: brainbrawler-app
+    plan: free    
     buildCommand: cd frontend && chmod +x build.sh && ./build.sh
     staticPublishPath: frontend
     headers:
