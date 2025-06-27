@@ -5,13 +5,12 @@ databases:
     plan: free
     region: frankfurt
 
-services:
-  # Redis Cache Service
-  - type: redis
-    name: brainbrawler-redis
+  - name: brainbrawler-redis
+    type: redis
     plan: free
     region: frankfurt
-    ipAllowList: []
+
+services:
   # Backend API + Socket.io + GameEngine integrato
   - type: web
     name: brainbrawler-api
@@ -31,14 +30,13 @@ services:
           name: brainbrawler-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
+        fromDatabase:
           name: brainbrawler-redis
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://brainbrawler-frontend.onrender.com
+        value: https://brainbrawler-app.onrender.com
       - key: GAME_ENGINE_ENABLED
         value: true
       - key: SOCKET_IO_ENABLED
@@ -57,15 +55,15 @@ services:
         value: 5
       - key: REDIS_TTL
         value: 3600
-      - key: KAFKA_ENABLED
-        value: false
   
-  # Frontend statico
-  - type: web
-    name: brainbrawler-frontend
-    env: static
+  # Frontend Static HTML/CSS/JS
+  - type: static
+    name: brainbrawler-app
     buildCommand: cd frontend && chmod +x build.sh && ./build.sh
     staticPublishPath: frontend
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://brainbrawler-api.onrender.com
+    headers:
+      - path: /*
+        headers:
+          X-Frame-Options: DENY
+          X-Content-Type-Options: nosniff
+          Referrer-Policy: strict-origin-when-cross-origin 
