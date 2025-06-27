@@ -61,7 +61,6 @@ services:
   - type: web
     name: brainbrawler-frontend
     env: static
-    plan: free
     buildCommand: cd frontend && chmod +x build.sh && ./build.sh
     staticPublishPath: frontend
     envVars:
